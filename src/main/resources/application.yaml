@@ -19,9 +19,9 @@ spring:
         webmvc:
           enabled: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/jiratokensdb
+    url: jdbc:postgresql://localhost:5432/jiratokensdb #replace with your DB URL, username, password
     username: myuser
-    password: mysecretpassword  # <--- Must match POSTGRES_PASSWORD
+    password: mysecretpassword
   jpa:
     hibernate:
       ddl-auto: update
@@ -52,8 +52,6 @@ spring:
 jasypt:
   encryptor:
     password: myencryptionpassword
-#    iv-generator-classname: org.jasypt.iv.NoIvGenerator
-#    algorithm: PBEWithMD5AndDES
 
 
 debug: true
