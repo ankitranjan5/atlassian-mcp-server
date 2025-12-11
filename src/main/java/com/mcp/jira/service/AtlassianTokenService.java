@@ -11,14 +11,17 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Service
-public class JiraTokenService {
+public class AtlassianTokenService {
 
-    private final String clientId = System.getenv("JIRA_CLIENT_ID");
-    private final String clientSecret = System.getenv("JIRA_CLIENT_SECRET");
-    private final String redirectUri = System.getenv("JIRA_REDIRECT_URI");
-    @Value("${spring.security.oauth2.client.provider.jira.token-uri}")
+    private final String clientId = System.getenv("ATLASSIAN_CLIENT_ID");
+    private final String clientSecret = System.getenv("ATLASSIAN_CLIENT_SECRET");
+    private final String redirectUri = System.getenv("ATLASSIAN_REDIRECT_URI");
+    @Value("${spring.security.oauth2.client.provider.atlassian.token-uri}")
     private String tokenUri;
     Base64.Encoder encoder = Base64.getEncoder();
 
@@ -51,6 +54,12 @@ public class JiraTokenService {
                 .bodyToMono(Map.class) // Deserialize to Map first
                 .block();
 
+        // Parse scopes if provided (Atlassian returns space-delimited string in 'scope')
+        String scopeStr = responseMap != null && responseMap.get("scope") != null ? String.valueOf(responseMap.get("scope")) : null;
+        Set<String> scopes = (scopeStr == null || scopeStr.isBlank()) ? Set.of() : Arrays.stream(scopeStr.split(" ")).collect(Collectors.toSet());
+        // Log for debugging
+        System.out.println("[AtlassianTokenService] exchangeCodeForToken scopes: " + scopes);
+
         // 2. Manually map to OAuth2AccessTokenResponse
         // This avoids the complex Jackson deserialization issues with the Spring class
         return OAuth2AccessTokenResponse.withToken((String) responseMap.get("access_token"))
@@ -80,6 +89,12 @@ public class JiraTokenService {
                 .bodyToMono(Map.class) // Deserialize to Map first
                 .block();
 
+        // Parse scopes if provided (Atlassian returns space-delimited string in 'scope')
+        String scopeStr = responseMap != null && responseMap.get("scope") != null ? String.valueOf(responseMap.get("scope")) : null;
+        Set<String> scopes = (scopeStr == null || scopeStr.isBlank()) ? Set.of() : Arrays.stream(scopeStr.split(" ")).collect(Collectors.toSet());
+        // Log for debugging
+        System.out.println("[AtlassianTokenService] getRefreshedTokens scopes: " + scopes);
+
         // 2. Manually map to OAuth2AccessTokenResponse
         // This avoids the complex Jackson deserialization issues with the Spring class
         return OAuth2AccessTokenResponse.withToken((String) responseMap.get("access_token"))
@@ -91,3 +106,4 @@ public class JiraTokenService {
     }
 
 }
+

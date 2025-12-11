@@ -1,8 +1,8 @@
 package com.mcp.jira.managers;
 
-import com.mcp.jira.modals.JiraToken;
-import com.mcp.jira.repository.JiraTokenRepository;
-import com.mcp.jira.service.JiraTokenService;
+import com.mcp.jira.modals.AtlassianToken;
+import com.mcp.jira.repository.AtlassianTokenRepository;
+import com.mcp.jira.service.AtlassianTokenService;
 import org.jasypt.encryption.StringEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -17,19 +17,19 @@ import java.util.Optional;
 public class TokenManager {
 
     @Autowired
-    private JiraTokenRepository jiraTokenRepository;
+    private AtlassianTokenRepository atlassianTokenRepository;
 
     @Autowired
     private StringEncryptor stringEncryptor;
 
     @Autowired
-    private JiraTokenService jiraTokenService;
+    private AtlassianTokenService atlassianTokenService;
 
     @Autowired
     private ClientRegistrationRepository clientRegistrationRepository;
 
     public String getToken(String principalName) {
-        Optional<JiraToken> jiraToken =  jiraTokenRepository.findById(principalName);
+        Optional<AtlassianToken> jiraToken =  atlassianTokenRepository.findById(principalName);
 
         String encryptedAccessToken = jiraToken.get().getEncryptedAccessToken();
         String encryptedRefreshToken = jiraToken.get().getEncryptedRefreshToken();
@@ -38,9 +38,9 @@ public class TokenManager {
         String refreshToken = stringEncryptor.decrypt(encryptedRefreshToken);
 
        if(expiresAt.isBefore(Instant.now())) {
-           ClientRegistration jiraRegistration = clientRegistrationRepository.findByRegistrationId("jira");
+           ClientRegistration jiraRegistration = clientRegistrationRepository.findByRegistrationId("atlassian");
 
-           OAuth2AccessTokenResponse tokenResponse = jiraTokenService.getRefreshedTokens(refreshToken, jiraRegistration);
+           OAuth2AccessTokenResponse tokenResponse = atlassianTokenService.getRefreshedTokens(refreshToken, jiraRegistration);
 
            String newAccessToken = tokenResponse.getAccessToken().getTokenValue();
            String newRefreshToken = tokenResponse.getRefreshToken().getTokenValue();
@@ -49,8 +49,8 @@ public class TokenManager {
            String newEncryptedAccessToken = stringEncryptor.encrypt(newAccessToken);
            String newEncryptedRefreshToken = stringEncryptor.encrypt(newRefreshToken);
 
-           JiraToken updatedJiraToken = new JiraToken(principalName, newEncryptedAccessToken, newEncryptedRefreshToken, newExpiresAt);
-           jiraTokenRepository.save(updatedJiraToken);
+           AtlassianToken updatedAtlassianToken = new AtlassianToken(principalName, newEncryptedAccessToken, newEncryptedRefreshToken, newExpiresAt);
+           atlassianTokenRepository.save(updatedAtlassianToken);
 
            return newAccessToken;
        } else {

@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers(HttpMethod.POST, "/mcp/message").authenticated()
-                        .requestMatchers("/auth/jira/callback", "/error","/").permitAll()
+                        .requestMatchers("/auth/jira/callback", "/error","/","/get/confluence","/get/cql").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(appTokenFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)

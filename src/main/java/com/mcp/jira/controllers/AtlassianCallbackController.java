@@ -1,8 +1,8 @@
 package com.mcp.jira.controllers;
 
-import com.mcp.jira.modals.JiraToken;
-import com.mcp.jira.repository.JiraTokenRepository;
-import com.mcp.jira.service.JiraTokenService;
+import com.mcp.jira.modals.AtlassianToken;
+import com.mcp.jira.repository.AtlassianTokenRepository;
+import com.mcp.jira.service.AtlassianTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -27,9 +27,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Controller
-public class JiraCallbackController {
+public class AtlassianCallbackController {
     @Autowired
-    private JiraTokenRepository jiraTokenRepository;
+    private AtlassianTokenRepository atlassianTokenRepository;
 
     @Autowired
 //    @Qualifier("jasyptEncryptor")
@@ -39,7 +39,7 @@ public class JiraCallbackController {
     private ClientRegistrationRepository clientRegistrationRepository;
 
     @Autowired
-    private JiraTokenService jiraTokenService;
+    private AtlassianTokenService atlassianTokenService;
 
     @Autowired
     private OAuth2AuthorizedClientService authorizedClientService;
@@ -93,8 +93,8 @@ public class JiraCallbackController {
         String principalName = authentication.getName();
 
         //Get access token
-        ClientRegistration jiraRegistration = clientRegistrationRepository.findByRegistrationId("jira");
-        OAuth2AccessTokenResponse tokenResponse = jiraTokenService.exchangeCodeForToken(code, jiraRegistration);
+        ClientRegistration atlassianRegistration = clientRegistrationRepository.findByRegistrationId("atlassian");
+        OAuth2AccessTokenResponse tokenResponse = atlassianTokenService.exchangeCodeForToken(code, atlassianRegistration);
 
         String accessToken = tokenResponse.getAccessToken().getTokenValue();
         String refreshToken = tokenResponse.getRefreshToken().getTokenValue();
@@ -103,11 +103,11 @@ public class JiraCallbackController {
         String encryptedAccessToken = stringEncryptor.encrypt(accessToken);
         String encryptedRefreshToken = stringEncryptor.encrypt(refreshToken);
 
-        JiraToken tokenEntity = new JiraToken(principalName, encryptedAccessToken, encryptedRefreshToken, expiresAt);
-        jiraTokenRepository.save(tokenEntity);
+        AtlassianToken tokenEntity = new AtlassianToken(principalName, encryptedAccessToken, encryptedRefreshToken, expiresAt);
+        atlassianTokenRepository.save(tokenEntity);
 
         OAuth2AuthorizedClient authorizedClient = new OAuth2AuthorizedClient(
-                jiraRegistration,
+                atlassianRegistration,
                 principalName,
                 tokenResponse.getAccessToken(),
                 tokenResponse.getRefreshToken()
