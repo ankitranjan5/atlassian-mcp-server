@@ -25,7 +25,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
   application:
     name:
       atlassian-mcp-server

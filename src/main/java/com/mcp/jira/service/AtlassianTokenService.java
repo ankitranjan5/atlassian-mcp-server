@@ -11,9 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.Arrays;
-import java.util.stream.Collectors;
+
 
 @Service
 public class AtlassianTokenService {
@@ -31,11 +29,7 @@ public class AtlassianTokenService {
 
 
 
-
-
-
     public OAuth2AccessTokenResponse exchangeCodeForToken(String code, ClientRegistration clientRegistration) {
-        // Atlassian expects JSON body, so a Map is perfect.
         Map<String, String> payload = new HashMap<>();
         payload.put("grant_type", "authorization_code");
         payload.put("client_id", clientRegistration.getClientId());
@@ -43,43 +37,30 @@ public class AtlassianTokenService {
         payload.put("code", code);
         payload.put("redirect_uri", clientRegistration.getRedirectUri());
 
-        // 1. Use WebClient correctly
         Map responseMap = WebClient.create()
                 .post()
                 .uri(clientRegistration.getProviderDetails().getTokenUri())
-                // Atlassian uses JSON, not form-urlencoded
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(payload)
                 .retrieve()
                 .bodyToMono(Map.class) // Deserialize to Map first
                 .block();
 
-        // Parse scopes if provided (Atlassian returns space-delimited string in 'scope')
-        String scopeStr = responseMap != null && responseMap.get("scope") != null ? String.valueOf(responseMap.get("scope")) : null;
-        Set<String> scopes = (scopeStr == null || scopeStr.isBlank()) ? Set.of() : Arrays.stream(scopeStr.split(" ")).collect(Collectors.toSet());
-        // Log for debugging
-        System.out.println("[AtlassianTokenService] exchangeCodeForToken scopes: " + scopes);
-
-        // 2. Manually map to OAuth2AccessTokenResponse
-        // This avoids the complex Jackson deserialization issues with the Spring class
         return OAuth2AccessTokenResponse.withToken((String) responseMap.get("access_token"))
                 .tokenType(OAuth2AccessToken.TokenType.BEARER)
                 .expiresIn(Long.parseLong(String.valueOf(responseMap.get("expires_in"))))
-//                .scopes((Set<String>) responseMap.get("scope")) // You might need to split string if space-delimited
                 .refreshToken((String) responseMap.get("refresh_token"))
                 .build();
     }
 
 
     public OAuth2AccessTokenResponse getRefreshedTokens(String refreshToken, ClientRegistration clientRegistration) {
-        // Atlassian expects JSON body, so a Map is perfect.
         Map<String, String> payload = new HashMap<>();
         payload.put("grant_type", "refresh_token");
         payload.put("client_id", clientRegistration.getClientId());
         payload.put("client_secret", clientRegistration.getClientSecret());
         payload.put("refresh_token", refreshToken);
 
-        // 1. Use WebClient correctly
         Map responseMap = WebClient.create()
                 .post()
                 .uri(clientRegistration.getProviderDetails().getTokenUri())
@@ -89,18 +70,10 @@ public class AtlassianTokenService {
                 .bodyToMono(Map.class) // Deserialize to Map first
                 .block();
 
-        // Parse scopes if provided (Atlassian returns space-delimited string in 'scope')
-        String scopeStr = responseMap != null && responseMap.get("scope") != null ? String.valueOf(responseMap.get("scope")) : null;
-        Set<String> scopes = (scopeStr == null || scopeStr.isBlank()) ? Set.of() : Arrays.stream(scopeStr.split(" ")).collect(Collectors.toSet());
-        // Log for debugging
-        System.out.println("[AtlassianTokenService] getRefreshedTokens scopes: " + scopes);
 
-        // 2. Manually map to OAuth2AccessTokenResponse
-        // This avoids the complex Jackson deserialization issues with the Spring class
         return OAuth2AccessTokenResponse.withToken((String) responseMap.get("access_token"))
                 .tokenType(OAuth2AccessToken.TokenType.BEARER)
                 .expiresIn(Long.parseLong(String.valueOf(responseMap.get("expires_in"))))
-//                .scopes((Set<String>) responseMap.get("scope")) // You might need to split string if space-delimited
                 .refreshToken((String) responseMap.get("refresh_token"))
                 .build();
     }

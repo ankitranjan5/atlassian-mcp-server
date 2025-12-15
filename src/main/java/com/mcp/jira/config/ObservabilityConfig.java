@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ObservabilityConfig {
 
-    // This Bean makes the @Observed annotation actually work
     @Bean
     public ObservedAspect observedAspect(ObservationRegistry observationRegistry) {
         return new ObservedAspect(observationRegistry);

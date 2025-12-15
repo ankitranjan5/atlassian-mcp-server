@@ -42,8 +42,4 @@ public class SecurityConfig {
         return http.build();
     }
 
-//    @PostConstruct
-//    public void enableContextPropagation() {
-//        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
-//    }
 }

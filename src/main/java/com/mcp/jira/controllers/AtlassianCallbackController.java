@@ -32,7 +32,6 @@ public class AtlassianCallbackController {
     private AtlassianTokenRepository atlassianTokenRepository;
 
     @Autowired
-//    @Qualifier("jasyptEncryptor")
     private StringEncryptor stringEncryptor;
 
     @Autowired
@@ -49,42 +48,39 @@ public class AtlassianCallbackController {
     public String home() {
         return """
             <html>
-            <head><title>Jira MCP Server</title></head>
+            <head><title>Atlassian MCP Server</title></head>
             <body style="font-family: sans-serif; padding: 50px; text-align: center;">
-                <h1>JIRA MCP Server Setup</h1>
-                <p>To let Claude access JIRA, you need to generate a connection token.</p>
-                <a href="/auth/jira" style="background-color: #0052cc; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 18px;">
-                    Connect to JIRA
+                <h1>Atlassian MCP Server Setup</h1>
+                <p>To let Claude access Atlassian, you need to generate a connection token.</p>
+                <a href="/auth/atlassian" style="background-color: #0052cc; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 18px;">
+                    Connect to Atlassian
                 </a>
             </body>
             </html>
             """;
     }
 
-    @GetMapping("/auth/jira")
+    @GetMapping("/auth/atlassian")
     public void startJiraAuth(HttpServletResponse response) throws IOException {
-        // In a real app, you'd dynamically build this using ClientRegistration,
-        // but for now, your hardcoded URL or logic is fine.
-        String authorizationUrl = "http://localhost:8080/oauth2/authorization/jira";
+        String authorizationUrl = "http://localhost:8080/oauth2/authorization/atlassian";
         response.sendRedirect(authorizationUrl);
     }
 
-    @GetMapping("/auth/jira/callback")
+    @GetMapping("/auth/atlassian/callback")
     @ResponseBody
-    public String jiraCallback(@RequestParam String code,@RequestParam("state") String state, Authentication authentication, HttpServletRequest request,
+    public String atlassianCallback(@RequestParam String code,@RequestParam("state") String state, Authentication authentication, HttpServletRequest request,
                                HttpServletResponse response) {
 
         if (authentication == null) {
             String newUserId = UUID.randomUUID().toString();
 
-            // Create a "dummy" authentication object for Spring Security
             authentication = new UsernamePasswordAuthenticationToken(
                     newUserId,
                     null,
                     AuthorityUtils.createAuthorityList("ROLE_USER")
             );
 
-            // OPTIONAL: Log them in immediately (set the security context)
+            // Log them in
             SecurityContextHolder.getContext().setAuthentication(authentication);
             HttpSession session = request.getSession(true);
             session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
@@ -122,7 +118,7 @@ public class AtlassianCallbackController {
             <html>
             <head><title>Connected!</title></head>
             <body style="font-family: sans-serif; padding: 50px; text-align: center;">
-                <h1 style="color: green;">✅ Successfully Connected to JIRA</h1>
+                <h1 style="color: green;">✅ Successfully Connected to Atlassian</h1>
                 <p>Your connection token has been generated.</p>
                 
                 <div style="background: #f4f4f4; padding: 20px; border-radius: 8px; display: inline-block; margin: 20px 0;">

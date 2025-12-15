@@ -35,20 +35,11 @@ public class AppTokenFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-//        String path = request.getRequestURI();
-//        if (path.startsWith("/mcp")) {
-//            // For MCP endpoints, don't create new sessions
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String appToken = authHeader.substring(7); // Remove "Bearer "
 
             // 2. Validate the Token
-            // We check if this UUID exists in our DB. If it does, we know who they are.
-            // Note: We don't need to decrypt the JIRA tokens here.
-            // We just need to know if this "Principal" exists.
             if (atlassianTokenRepository.existsById(appToken)) {
 
                 // 3. Create the Authentication Object
@@ -61,7 +52,7 @@ public class AppTokenFilter extends OncePerRequestFilter {
                                 AuthorityUtils.createAuthorityList("ROLE_USER") // Give them basic role
                         );
 
-                // 4. Set the Context (Log them in!)
+                // 4. Set the Context (Log them in)
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 request.setAttribute("AUTHENTICATED_USER", appToken);
                 System.out.println("MCP Filter: Authenticated request for User " + appToken);

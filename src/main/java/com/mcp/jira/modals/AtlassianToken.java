@@ -11,7 +11,7 @@ import java.time.Instant;
 public class AtlassianToken {
 
     @Id
-    private String principalName; // The user's unique name (from Google/GitHub)
+    private String principalName;
 
     @Lob
     @Column(columnDefinition = "TEXT")
@@ -23,7 +23,6 @@ public class AtlassianToken {
 
     private Instant expiresAt;
 
-    // Constructors, Getters, and Setters
     public AtlassianToken() {}
 
     public AtlassianToken(String principalName, String encryptedAccessToken, String encryptedRefreshToken, Instant expiresAt) {
