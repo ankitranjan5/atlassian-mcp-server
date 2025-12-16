@@ -1,4 +1,4 @@
-# Jira MCP Server
+# Atlassian MCP Server
 
 A lightweight Spring Boot service that handles OAuth2 authentication with Atlassian (Jira) and exposes small "tools" that let a Claude-like assistant access and manage Jira issues on behalf of a user.
 
@@ -72,14 +72,14 @@ java -jar target/*.jar
 ```
 
 3. Visit the app:
-- Home page: `http://localhost:8080/` — click "Connect to JIRA" to start OAuth.
+- Home page: `http://localhost:8080/` — click "Connect to Atlassian" to start OAuth.
 - After consent, you'll be shown a `JIRA_CONNECTION_TOKEN` on the success page.
 
 Using the connection token with Claude
 - Copy the `JIRA_CONNECTION_TOKEN` from the OAuth success page into your agent configuration (e.g. `claude_desktop_config.json`) so the agent can call this server on behalf of the principal.
 
 Endpoints of interest
-- `GET /` — simple HTML home with a "Connect to JIRA" button.
+- `GET /` — simple HTML home with a "Connect to Atlassian" button.
 - `GET /auth/jira` — starts OAuth flow (redirects to `/oauth2/authorization/jira`).
 - `GET /auth/jira/callback` — OAuth callback endpoint. After success, prints the generated `JIRA_CONNECTION_TOKEN`.
 - The LLM tools are registered through Spring AI MCP Server using the `JiraService` bean (no separate REST endpoints for those; they are callable by the agent through MCP).
