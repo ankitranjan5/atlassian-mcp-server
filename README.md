@@ -1,4 +1,4 @@
-# Jira MCP Server
+# Atlassian MCP Server
 
 A lightweight Spring Boot service that handles OAuth2 authentication with Atlassian (Jira & Confluence) and exposes small "tools" that let a Claude-like assistant access and manage Jira issues and Confluence pages on behalf of a user.
 
