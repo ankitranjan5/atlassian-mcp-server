@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers(HttpMethod.POST, "/mcp/message").authenticated()
-                        .requestMatchers("/auth/atlassian/callback", "/error","/").permitAll()
+                        .requestMatchers("/auth/atlassian/callback", "/error","/","/internal/tools/").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(appTokenFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)

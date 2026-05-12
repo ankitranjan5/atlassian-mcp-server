@@ -20,8 +20,8 @@ spring:
           enabled: true
   datasource:
     url: jdbc:postgresql://localhost:5432/jiratokensdb #replace with your DB URL, username, password
-    username: myuser
-    password: mysecretpassword
+    username: admin
+    password: password
   jpa:
     hibernate:
       ddl-auto: update
@@ -89,3 +89,6 @@ management:
   zipkin:
     tracing:
       endpoint: http://localhost:9411/api/v2/spans
+
+server:
+  port: 8080
