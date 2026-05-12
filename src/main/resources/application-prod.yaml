@@ -1,0 +1,93 @@
+spring:
+  ai:
+    mcp:
+      server:
+        type: SYNC
+        session-timeout-ms: 3600000
+        # Enable SSE (Server-Sent Events)
+        transport: sse
+
+        # Define the path for the initial SSE connection
+        sse-endpoint: /sse
+
+        # Define the path where Claude will POST messages back to you
+        sse-message-endpoint: /mcp/message
+
+        # Explicitly disable Stdio to prevent log pollution issues
+        stdio:
+          enabled: false
+        webmvc:
+          enabled: true
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  application:
+    name:
+      atlassian-mcp-server
+
+
+  security:
+    oauth2:
+      client:
+        registration:
+          atlassian:
+            clientId: ${ATLASSIAN_CLIENT_ID}
+            clientSecret: ${ATLASSIAN_CLIENT_SECRET}
+            authorizationGrantType: authorization_code
+            redirectUri: ${ATLASSIAN_CALLBACK_URL}
+            scope:
+              - read:me
+              - read:jira-work
+              - write:jira-work
+              - offline_access
+              #              - write:confluence-content
+              - read:confluence-space.summary
+              - read:confluence-content.all
+              - search:confluence
+              - read:confluence-user
+              - read:confluence-props
+              - read:confluence-content.summary
+              - read:confluence-content.permission
+              - read:confluence-groups
+              - read:page:confluence
+              - read:content:confluence
+              - read:content-details:confluence
+              - read:space-details:confluence
+              - read:blogpost:confluence
+              - read:comment:confluence
+              - read:label:confluence
+              - read:watcher:confluence
+              - read:group:confluence
+              - write:confluence-content
+              - write:confluence-props
+              - write:confluence-space
+              - write:page:confluence
+              - read:space:confluence
+
+        provider:
+          atlassian:
+            authorizationUri: https://auth.atlassian.com/authorize?audience=api.atlassian.com
+            tokenUri: https://auth.atlassian.com/oauth/token
+            userInfoUri: https://api.atlassian.com/me
+            userNameAttribute: account_id
+jasypt:
+  encryptor:
+    password: myencryptionpassword
+
+
+# enable tracing
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL}/api/v2/spans
