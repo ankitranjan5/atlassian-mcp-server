@@ -1,0 +1,11 @@
+2026-07-19 21:13:48 - [AUDIT][MCP-ATTEMPT] Timestamp: 2026-07-19T15:43:48.784860Z, User: 6b8a760b-c369-4740-b04a-62b602d99119, Tool: get_jira_issue, Arguments: [SCRUM-1, 6b8a760b-c369-4740-b04a-62b602d99119]
+2026-07-19 21:13:50 - [AUDIT][MCP-SUCCESS] Timestamp: 2026-07-19T15:43:50.863724Z, User: 6b8a760b-c369-4740-b04a-62b602d99119, Tool: get_jira_issue
+2026-07-19 21:39:53 - [AUDIT][MCP-DENIED] Timestamp: 2026-07-19T16:09:53.150495Z, User: dcc5a304-3c1a-429b-90a7-e1c52b50c3e0, Tool: get_jira_issue, Required Roles: [ROLE_JIRA_DEVELOPER]
+2026-07-19 21:41:04 - [AUDIT][MCP-ATTEMPT] Timestamp: 2026-07-19T16:11:04.104394Z, User: 6b8a760b-c369-4740-b04a-62b602d99119, Tool: get_jira_issue, Arguments: [SCRUM-1, 6b8a760b-c369-4740-b04a-62b602d99119]
+2026-07-19 21:41:04 - [AUDIT][MCP-SUCCESS] Timestamp: 2026-07-19T16:11:04.888224Z, User: 6b8a760b-c369-4740-b04a-62b602d99119, Tool: get_jira_issue
+2026-07-19 21:43:33 - [AUDIT][MCP-ATTEMPT] Timestamp: 2026-07-19T16:13:33.298973Z, User: 6b8a760b-c369-4740-b04a-62b602d99119, Tool: Search_Confluence_pages_using_CQL, Arguments: [text ~ "prod incident"]
+2026-07-19 21:43:35 - [AUDIT][MCP-SUCCESS] Timestamp: 2026-07-19T16:13:35.421266Z, User: 6b8a760b-c369-4740-b04a-62b602d99119, Tool: Search_Confluence_pages_using_CQL
+2026-07-19 21:43:38 - [AUDIT][MCP-ATTEMPT] Timestamp: 2026-07-19T16:13:38.346388Z, User: 6b8a760b-c369-4740-b04a-62b602d99119, Tool: Search_Confluence_pages_using_CQL, Arguments: [title ~ "incident"]
+2026-07-19 21:43:39 - [AUDIT][MCP-SUCCESS] Timestamp: 2026-07-19T16:13:39.405633Z, User: 6b8a760b-c369-4740-b04a-62b602d99119, Tool: Search_Confluence_pages_using_CQL
+2026-07-19 21:43:44 - [AUDIT][MCP-ATTEMPT] Timestamp: 2026-07-19T16:13:44.699270Z, User: 6b8a760b-c369-4740-b04a-62b602d99119, Tool: Get_Confluence_page_by_pageID, Arguments: [131272]
+2026-07-19 21:43:45 - [AUDIT][MCP-SUCCESS] Timestamp: 2026-07-19T16:13:45.522261Z, User: 6b8a760b-c369-4740-b04a-62b602d99119, Tool: Get_Confluence_page_by_pageID

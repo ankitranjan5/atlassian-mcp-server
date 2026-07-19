@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Keep standard Spring console output -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <!-- Dedicated Rolling File Appender for the Audit Logger -->
+    <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>mcp-audit.log</file>
+
+        <!-- Clean, readable format just for the audit trail -->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} - %msg%n</pattern>
+        </encoder>
+
+        <!-- Automatically roll over the log file every day -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>mcp-audit.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory> <!-- Keep 30 days of logs -->
+        </rollingPolicy>
+    </appender>
+
+    <!-- Broadened to catch BOTH the AuditLogger (success) and the Aspect (failures/rejections) -->
+    <logger name="com.governedmcp.starter.governedmcp" level="DEBUG" additivity="false">
+        <appender-ref ref="AUDIT_FILE"/>
+         <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- Everything else goes to the standard console -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>

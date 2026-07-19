@@ -77,7 +77,7 @@ public class AtlassianService {
     }
 
     @Observed(name = "tool.jira.jql", contextualName = "searching-jira")
-    @Tool(description = "Search for Jira issues using JQL.")
+    @GovernedMcpTool(name = "Search_Jira_using_JQL", allowedRoles = {"ROLE_JIRA_DEVELOPER"})
     public List<AtlassianUtils.JiraIssueSummary> searchJiraIssues(@RequestParam String jql) {
         try {
             String accessToken = atlassianClient.getAccessToken();
@@ -104,7 +104,7 @@ public class AtlassianService {
     }
 
     @Observed(name = "tool.jira.create", contextualName = "create-issue-jira")
-    @Tool(description = "Create a new Jira issue.")
+    @GovernedMcpTool(name = "Create_new_Jira_issue", allowedRoles = {"ROLE_JIRA_DEVELOPER"})
     public String createIssue(String projectKey, String summary, String issueType, String description) {
         try {
             String accessToken = atlassianClient.getAccessToken();
@@ -136,7 +136,7 @@ public class AtlassianService {
     }
 
     @Observed(name = "tool.jira.update", contextualName = "update-jira")
-    @Tool(description = "Update an existing Jira issue summary.")
+    @GovernedMcpTool(name = "Update_existing_Jira_issue_summary", allowedRoles = {"ROLE_JIRA_DEVELOPER"})
     public String updateIssueSummary(String issueKey, String newSummary) {
         try {
             String accessToken = atlassianClient.getAccessToken();
@@ -161,7 +161,7 @@ public class AtlassianService {
     // --- CONFLUENCE TOOLS ---
 
     @Observed(name = "tool.confluence.cql", contextualName = "searching-confluence")
-    @Tool(description = "Search Confluence pages using CQL.")
+    @GovernedMcpTool(name = "Search_Confluence_pages_using_CQL", allowedRoles = {"ROLE_JIRA_DEVELOPER"})
     public List<AtlassianUtils.ConfluencePageSummary> searchConfluencePages(@RequestParam String cql) throws Exception {
         String accessToken = atlassianClient.getAccessToken();
         String cloudId = atlassianClient.getCloudId(accessToken);
@@ -177,7 +177,7 @@ public class AtlassianService {
     }
 
     @Observed(name = "tool.confluence.page", contextualName = "search-page-confluence")
-    @Tool(description = "Get Confluence page content by page ID.")
+    @GovernedMcpTool(name = "Get_Confluence_page_by_pageID", allowedRoles = {"ROLE_JIRA_DEVELOPER"})
     public String getConfluencePageContent(@RequestParam String pageId) {
         try {
             String accessToken = atlassianClient.getAccessToken();
@@ -200,7 +200,7 @@ public class AtlassianService {
     }
 
     @Observed(name = "tool.confluence.spaces", contextualName = "search-spaces-confluence")
-    @Tool(description = "Lists all available Confluence Spaces.")
+    @GovernedMcpTool(name = "Lists_available_Confluence_Spaces", allowedRoles = {"ROLE_JIRA_DEVELOPER"})
     public String getConfluenceSpaces() {
         try {
             String accessToken = atlassianClient.getAccessToken();
@@ -223,7 +223,7 @@ public class AtlassianService {
 
 
     @Observed(name = "tool.confluence.create.page", contextualName = "create-confluence-page")
-    @Tool(description = "Create a new Confluence page.")
+    @GovernedMcpTool(name = "Create_new_Confluence_page", allowedRoles = {"ROLE_JIRA_DEVELOPER"})
     public String createConfluencePage(
             @RequestParam String spaceId,
             @RequestParam String title,

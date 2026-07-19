@@ -102,6 +102,8 @@ governed:
 logging:
   level:
     org.springframework.security: DEBUG
+#  file:
+#    name: mcp-audit.log
 
 mcp:
   security:
@@ -109,3 +111,4 @@ mcp:
       jira-software-users: ROLE_JIRA_USER
       jira-developers: ROLE_JIRA_DEVELOPER
       site-admins: ROLE_JIRA_ADMIN
+

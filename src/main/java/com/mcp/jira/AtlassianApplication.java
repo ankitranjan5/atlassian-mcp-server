@@ -7,8 +7,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 @SpringBootApplication
 @EnableCaching
@@ -18,21 +16,14 @@ public class AtlassianApplication {
 		SpringApplication.run(AtlassianApplication.class, args);
 	}
 
-	@Bean
-	public ToolCallbackProvider JiraTools(AtlassianService jiraService){
+//	@Bean
+//	public ToolCallbackProvider JiraTools(AtlassianService jiraService){
+//
+//		ToolCallbackProvider provider = MethodToolCallbackProvider.builder()
+//				.toolObjects(jiraService)
+//				.build();
+//
+//		return provider;
+//	}
 
-		ToolCallbackProvider provider = MethodToolCallbackProvider.builder()
-				.toolObjects(jiraService)
-				.build();
-
-		return provider;
-	}
-
-	@Bean
-	public JwtDecoder jwtDecoder() {
-		// This is a dummy decoder just to get the application context to load.
-		// It points to a fake JWKS endpoint.
-		// DO NOT USE THIS IN PRODUCTION.
-		return NimbusJwtDecoder.withJwkSetUri("https://mock-server.com/.well-known/jwks.json").build();
-	}
 }

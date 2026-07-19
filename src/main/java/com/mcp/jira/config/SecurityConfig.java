@@ -23,7 +23,7 @@ public class SecurityConfig {
 
 
     @Bean
-    @Order(100)
+    @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/mcp/**","/sse"))
