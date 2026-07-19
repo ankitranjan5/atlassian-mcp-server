@@ -1,27 +1,25 @@
 package com.mcp.jira.controllers;
 
-
-import com.mcp.jira.controllers.AtlassianService;
+import com.governedmcp.starter.governedmcp.aop.GovernedMcpAspect;
+import com.governedmcp.starter.governedmcp.audit.AuditLogger;
+import com.governedmcp.starter.governedmcp.discovery.SchemaGenerator;
+import com.governedmcp.starter.governedmcp.security.UserRoleProvider;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.lang.reflect.Method;
-import java.time.Instant;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import com.governedmcp.starter.governedmcp.aop.GovernedMcpAspect;
-import com.governedmcp.starter.governedmcp.discovery.SchemaGenerator;
-import com.governedmcp.starter.governedmcp.audit.AuditLogger;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @Import(GovernedMcpAspect.class)
@@ -33,25 +31,26 @@ public class GovernedMcpIntegrationTest {
     @MockBean
     private AuditLogger auditLogger;
 
-    private void setMockSecurityContext(String username, List<String> roles) {
-        Jwt jwt = new Jwt("mock-token-value",
-                Instant.now(),
-                Instant.now().plusSeconds(3600),
-                Map.of("alg", "none"),
-                Map.of("sub", username, "roles", roles));
+    // Mock the new provider instead of the security context roles
+    @MockBean
+    private UserRoleProvider userRoleProvider;
 
-        var authorities = roles.stream()
-                .map(SimpleGrantedAuthority::new)
-                .toList();
+    @BeforeEach
+    public void setup() {
+        SecurityContextHolder.clearContext();
+    }
 
-        JwtAuthenticationToken auth = new JwtAuthenticationToken(jwt, authorities);
+    private void setMockSecurityContext(String username) {
+        // Mimic the AppTokenFilter: Just standard authentication with the UUID as the principal.
+        // No roles are injected here anymore.
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
     @Test
     public void test_UnauthenticatedUser_ShouldThrowAccessDenied() {
-        SecurityContextHolder.clearContext();
-
+        // Context is already cleared by @BeforeEach
         assertThrows(AccessDeniedException.class, () -> {
             jiraToolService.getIssue("PROJ-123", "malicious_injected_user");
         });
@@ -59,8 +58,11 @@ public class GovernedMcpIntegrationTest {
 
     @Test
     public void test_UnauthorizedRole_ShouldThrowAccessDenied() {
-        // User has a valid token, but belongs to the wrong group/role
-        setMockSecurityContext("bob_junior", Collections.singletonList("ROLE_GUEST"));
+        String testUuid = "bob_junior";
+        setMockSecurityContext(testUuid);
+
+        // Instruct the mock provider to return a non-developer role
+        when(userRoleProvider.getRolesForUser(testUuid)).thenReturn(Set.of("ROLE_GUEST"));
 
         assertThrows(AccessDeniedException.class, () -> {
             jiraToolService.getIssue("PROJ-123", "malicious_injected_user");
@@ -69,8 +71,11 @@ public class GovernedMcpIntegrationTest {
 
     @Test
     public void test_AuthorizedUser_ShouldSucceedAndInjectCorrectUserId() {
-        // Alice has the correct role
-        setMockSecurityContext("alice_vp", Collections.singletonList("ROLE_JIRA_DEVELOPER"));
+        String testUuid = "alice_vp";
+        setMockSecurityContext(testUuid);
+
+        // Instruct the mock provider to return the required role
+        when(userRoleProvider.getRolesForUser(testUuid)).thenReturn(Set.of("ROLE_JIRA_DEVELOPER"));
 
         // We intentionally pass a dirty string to simulate prompt injection trying to impersonate the CEO
         String dirtyInput = "CEO_USER_ID";
@@ -79,7 +84,7 @@ public class GovernedMcpIntegrationTest {
 
         // Verify the execution completed successfully
         assertNotNull(result);
-        // Verify that the dirty input was successfully overridden by the cryptographic token subject
+        // Verify that the dirty input was successfully overridden by the verified subject
         assertTrue(result.contains("assignee = 'alice_vp'"));
         assertFalse(result.contains("CEO_USER_ID"));
     }

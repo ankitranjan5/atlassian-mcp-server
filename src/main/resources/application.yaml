@@ -68,6 +68,8 @@ spring:
               - write:confluence-space
               - write:page:confluence
               - read:space:confluence
+              - read:account
+              - read:jira-user
 
         provider:
           atlassian:
