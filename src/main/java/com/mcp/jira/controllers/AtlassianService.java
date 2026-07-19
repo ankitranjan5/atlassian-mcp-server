@@ -1,5 +1,6 @@
 package com.mcp.jira.controllers;
 
+import com.governedmcp.starter.governedmcp.annotation.GovernedUserContext;
 import com.mcp.jira.clients.AtlassianClient;
 import com.mcp.jira.managers.TokenManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
+import com.governedmcp.starter.governedmcp.annotation.GovernedMcpTool;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,40 +34,46 @@ public class AtlassianService {
     // --- JIRA TOOLS ---
 
     @Observed(name = "tool.jira.issue", contextualName = "search-issue-jira")
-    @Tool(description = "Get Jira issue details by issue ID (e.g., PROJ-123)")
-    public String getIssue(@RequestParam String issueId) {
-        try {
-            String accessToken = atlassianClient.getAccessToken();
-            String cloudId = atlassianClient.getCloudId(accessToken);
+//    @Tool(description = "Get Jira issue details by issue ID (e.g., PROJ-123)")
+    @GovernedMcpTool(name = "get_jira_issue", allowedRoles = {"ROLE_JIRA_DEVELOPER"})
+    public String getIssue(@RequestParam String issueId, @GovernedUserContext String verifiedUserId) {
+        System.out.println("Executing governed tool for user: " + verifiedUserId);
 
-            String responseJson = webClient.get()
-                    .uri("https://api.atlassian.com/ex/jira/" + cloudId + "/rest/api/3/issue/" + issueId)
-                    .header("Authorization", "Bearer " + accessToken)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
+        String secureJql = String.format("key = '%s' AND assignee = '%s'", issueId, verifiedUserId);
 
-            JsonNode root = objectMapper.readTree(responseJson);
-            JsonNode fields = root.path("fields");
-
-            return String.format("""
-                **Issue:** %s
-                **Summary:** %s
-                **Status:** %s
-                **Priority:** %s
-                **Assignee:** %s
-                **Description:** %s
-                """,
-                    root.path("key").asText(),
-                    fields.path("summary").asText("No Summary"),
-                    fields.path("status").path("name").asText("Unknown"),
-                    fields.path("priority").path("name").asText("None"),
-                    fields.path("assignee").path("displayName").asText("Unassigned"),
-                    fields.path("description").path("content").findPath("text").asText("No description"));
-
-        } catch (Exception e) {
-            return "Error fetching issue: " + e.getMessage();
-        }
+        return "Securely fetched details for " + issueId + " using JQL: [" + secureJql + "]";
+//        try {
+//            String accessToken = atlassianClient.getAccessToken();
+//            String cloudId = atlassianClient.getCloudId(accessToken);
+//
+//            String responseJson = webClient.get()
+//                    .uri("https://api.atlassian.com/ex/jira/" + cloudId + "/rest/api/3/issue/" + issueId)
+//                    .header("Authorization", "Bearer " + accessToken)
+//                    .retrieve()
+//                    .bodyToMono(String.class)
+//                    .block();
+//
+//            JsonNode root = objectMapper.readTree(responseJson);
+//            JsonNode fields = root.path("fields");
+//
+//            return String.format("""
+//                **Issue:** %s
+//                **Summary:** %s
+//                **Status:** %s
+//                **Priority:** %s
+//                **Assignee:** %s
+//                **Description:** %s
+//                """,
+//                    root.path("key").asText(),
+//                    fields.path("summary").asText("No Summary"),
+//                    fields.path("status").path("name").asText("Unknown"),
+//                    fields.path("priority").path("name").asText("None"),
+//                    fields.path("assignee").path("displayName").asText("Unassigned"),
+//                    fields.path("description").path("content").findPath("text").asText("No description"));
+//
+//        } catch (Exception e) {
+//            return "Error fetching issue: " + e.getMessage();
+//        }
     }
 
     @Observed(name = "tool.jira.jql", contextualName = "searching-jira")

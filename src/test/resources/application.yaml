@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  security:
+    oauth2:
+      client:
+        registration:
+          atlassian:
+            clientId: test-client-id
+            clientSecret: test-client-secret
+            authorizationGrantType: authorization_code
+            redirectUri: http://localhost:8080/auth/atlassian/callback
+            scope:
+              - read:jira-work
+        provider:
+          atlassian:
+            authorizationUri: https://auth.atlassian.com/authorize?audience=api.atlassian.com
+            tokenUri: https://auth.atlassian.com/oauth/token
+            userInfoUri: https://api.atlassian.com/me
+            userNameAttribute: account_id
+
+management:
+  tracing:
+    enabled: false
