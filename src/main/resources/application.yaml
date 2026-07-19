@@ -100,3 +100,10 @@ governed:
 logging:
   level:
     org.springframework.security: DEBUG
+
+mcp:
+  security:
+    group-mapping:
+      jira-software-users: ROLE_JIRA_USER
+      jira-developers: ROLE_JIRA_DEVELOPER
+      site-admins: ROLE_JIRA_ADMIN
