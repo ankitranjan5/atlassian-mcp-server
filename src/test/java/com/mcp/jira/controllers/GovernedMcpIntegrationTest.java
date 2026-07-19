@@ -1,5 +1,7 @@
 package com.mcp.jira.controllers;
 
+import com.governedmcp.starter.governedmcp.annotation.GovernedMcpTool;
+import com.governedmcp.starter.governedmcp.annotation.GovernedUserContext;
 import com.governedmcp.starter.governedmcp.aop.GovernedMcpAspect;
 import com.governedmcp.starter.governedmcp.audit.AuditLogger;
 import com.governedmcp.starter.governedmcp.discovery.SchemaGenerator;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestComponent;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.access.AccessDeniedException;
@@ -22,16 +25,26 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
-@Import(GovernedMcpAspect.class)
+@Import({GovernedMcpAspect.class, GovernedMcpIntegrationTest.DummySecurityTool.class})
 public class GovernedMcpIntegrationTest {
 
+    // 1. Create a lightweight, fake tool just for testing the Aspect
+    @TestComponent
+    public static class DummySecurityTool {
+        @GovernedMcpTool(name = "dummy_tool", allowedRoles = {"ROLE_JIRA_DEVELOPER"})
+        public String executeDummy(String input, @GovernedUserContext String userId) {
+            // Echo back exactly what the AOP framework injected
+            return "Executed input: " + input + ", Injected User: " + userId;
+        }
+    }
+
+    // 2. Autowire the fake tool instead of the real AtlassianService
     @Autowired
-    private AtlassianService jiraToolService;
+    private DummySecurityTool dummySecurityTool;
 
     @MockBean
     private AuditLogger auditLogger;
 
-    // Mock the new provider instead of the security context roles
     @MockBean
     private UserRoleProvider userRoleProvider;
 
@@ -41,8 +54,6 @@ public class GovernedMcpIntegrationTest {
     }
 
     private void setMockSecurityContext(String username) {
-        // Mimic the AppTokenFilter: Just standard authentication with the UUID as the principal.
-        // No roles are injected here anymore.
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(auth);
@@ -50,9 +61,8 @@ public class GovernedMcpIntegrationTest {
 
     @Test
     public void test_UnauthenticatedUser_ShouldThrowAccessDenied() {
-        // Context is already cleared by @BeforeEach
         assertThrows(AccessDeniedException.class, () -> {
-            jiraToolService.getIssue("PROJ-123", "malicious_injected_user");
+            dummySecurityTool.executeDummy("PROJ-123", "malicious_injected_user");
         });
     }
 
@@ -61,11 +71,10 @@ public class GovernedMcpIntegrationTest {
         String testUuid = "bob_junior";
         setMockSecurityContext(testUuid);
 
-        // Instruct the mock provider to return a non-developer role
         when(userRoleProvider.getRolesForUser(testUuid)).thenReturn(Set.of("ROLE_GUEST"));
 
         assertThrows(AccessDeniedException.class, () -> {
-            jiraToolService.getIssue("PROJ-123", "malicious_injected_user");
+            dummySecurityTool.executeDummy("PROJ-123", "malicious_injected_user");
         });
     }
 
@@ -74,40 +83,29 @@ public class GovernedMcpIntegrationTest {
         String testUuid = "alice_vp";
         setMockSecurityContext(testUuid);
 
-        // Instruct the mock provider to return the required role
         when(userRoleProvider.getRolesForUser(testUuid)).thenReturn(Set.of("ROLE_JIRA_DEVELOPER"));
 
-        // We intentionally pass a dirty string to simulate prompt injection trying to impersonate the CEO
         String dirtyInput = "CEO_USER_ID";
 
-        String result = jiraToolService.getIssue("PROJ-123", dirtyInput);
+        // Call our fake tool
+        String result = dummySecurityTool.executeDummy("PROJ-123", dirtyInput);
 
-        // Verify the execution completed successfully
+        // Verify the Aspect intercepted and forcefully injected the UUID
         assertNotNull(result);
-        // Verify that the dirty input was successfully overridden by the verified subject
-        assertTrue(result.contains("assignee = 'alice_vp'"));
+        assertTrue(result.contains("Injected User: alice_vp"));
         assertFalse(result.contains("CEO_USER_ID"));
     }
 
     @Test
     public void testGovernedSchema_ShouldHideUserId() throws NoSuchMethodException {
-        // 1. Initialize our custom generator
         SchemaGenerator generator = new SchemaGenerator();
 
-        // 2. Grab your exact method signature
+        // Grab the method signature from the real service to prove the generator works
         Method method = AtlassianService.class.getMethod("getIssue", String.class, String.class);
 
-        // 3. Run it through the Phase 1 engine
         String generatedJsonSchema = generator.generateInputSchema(method);
 
-        System.out.println("Generated MCP Schema:\n" + generatedJsonSchema);
-
-        // 4. Verify the LLM can see the issueId
-        assertTrue(generatedJsonSchema.contains("issueId"),
-                "Schema should expose the issueId to the LLM");
-
-        // 5. SECURITY CHECK: Verify the LLM cannot see the verifiedUserId
-        assertFalse(generatedJsonSchema.contains("verifiedUserId"),
-                "CRITICAL: Schema leaked the governed context parameter!");
+        assertTrue(generatedJsonSchema.contains("issueId"));
+        assertFalse(generatedJsonSchema.contains("verifiedUserId"));
     }
 }
